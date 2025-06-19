@@ -1,0 +1,19 @@
+@define-mixin flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@define-mixin container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-md);
+}
+
+@define-mixin card {
+  background: var(--white);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-lg);
+}

@@ -1,0 +1,26 @@
+@import './styles/base/_reset.css';
+@import './styles/base/_variables.css';
+@import './styles/base/_typography.css';
+@import './styles/utilities/_animations.css';
+@import './styles/utilities/_mixins.css';
+
+/* Global styles */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Toast notifications */
+.Toastify__toast {
+  font-family: inherit;
+  border-radius: var(--border-radius-sm);
+}
+
+.Toastify__toast--success {
+  background: var(--secondary-color);
+}
+
+.Toastify__toast--error {
+  background: var(--danger-color);
+}
