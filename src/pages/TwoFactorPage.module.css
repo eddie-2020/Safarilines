@@ -1,4 +1,4 @@
-.authPage {
+.twoFactorPage {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -14,7 +14,7 @@
   padding: 2.5rem;
   width: 100%;
   max-width: 450px;
-  transition: all 0.3s ease;
+  text-align: center;
 }
 
 @media (max-width: 576px) {
@@ -23,7 +23,7 @@
     max-width: 100%;
   }
   
-  .authPage {
+  .twoFactorPage {
     padding: 1rem;
   }
 }

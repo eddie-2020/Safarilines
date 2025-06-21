@@ -3,6 +3,9 @@ import RegisterForm from './RegisterForm';
 import styles from './AuthTabs.module.css';
 
 const AuthTabs = ({ activeTab, setActiveTab }) => {
+  // Function to switch to login tab
+  const switchToLogin = () => setActiveTab('login');
+
   return (
     <>
       <div className={styles.tabs}>
@@ -20,7 +23,11 @@ const AuthTabs = ({ activeTab, setActiveTab }) => {
         </button>
       </div>
 
-      {activeTab === 'register' ? <RegisterForm /> : <LoginForm />}
+      {activeTab === 'register' ? (
+        <RegisterForm switchToLogin={switchToLogin} />
+      ) : (
+        <LoginForm />
+      )}
     </>
   );
 };

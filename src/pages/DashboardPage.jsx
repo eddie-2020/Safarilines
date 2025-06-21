@@ -1,44 +1,60 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Dashboard from '../components/Dashboard/Dashboard';
 import { getUserData } from '../services/api';
+import useAuth  from '../hooks/useAuth';
 import styles from './DashboardPage.module.css';
 
 const DashboardPage = () => {
   const [userData, setUserData] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { logout, isLoggingOut } = useAuth();
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchUserData = async () => {
       try {
-        const response = await getUserData();
-        setUserData(response.data);
-      } catch (error) {
-        console.error('Failed to fetch user data', error);
-        navigate('/');
+        const data = await getUserData();
+        setUserData(data);
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to load user data');
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
-    if (!localStorage.getItem('token')) {
-      navigate('/');
-    } else {
-      fetchData();
-    }
-  }, [navigate]);
+    fetchUserData();
+  }, []);
 
-  if (isLoading) {
-    return (
-      <div className={styles.loadingContainer}>
-        <div className={styles.loadingSpinner}></div>
-        <p>Loading your dashboard...</p>
+  if (loading) return (
+    <div className={styles.loadingContainer}>
+      <div className={styles.loadingSpinner} />
+      <p>Loading your dashboard...</p>
+    </div>
+  );
+
+  if (error) return <div className={styles.error}>Error: {error}</div>;
+
+  return (
+    <div className={styles.dashboard}>
+      <div className={styles.header}>
+        <h1>Welcome, {userData?.username}</h1>
+        <button 
+          onClick={logout}
+          disabled={isLoggingOut}
+          className={styles.logoutButton}
+        >
+          {isLoggingOut ? 'Signing out...' : 'Logout'}
+        </button>
       </div>
-    );
-  }
-
-  return <Dashboard userData={userData} />;
+      
+      <div className={styles.content}>
+        {/* Render other user data */}
+        {userData?.email && <p>Email: {userData.email}</p>}
+        {userData?.date_joined && (
+          <p>Member since: {new Date(userData.date_joined).toLocaleDateString()}</p>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default DashboardPage;

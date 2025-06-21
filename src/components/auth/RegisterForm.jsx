@@ -1,9 +1,10 @@
 import { useState, useRef } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
+import { toast } from 'react-toastify';
 import useAuth from '../../hooks/useAuth'; 
 import styles from './RegisterForm.module.css';
 
-const RegisterForm = () => {
+const RegisterForm = ({ switchToLogin }) => {
   const [formData, setFormData] = useState({
     role: 'customer',
     first_name: '',
@@ -20,12 +21,12 @@ const RegisterForm = () => {
     city: '',
     state: '',
     post_code: '',
-    country: 'United States', // default country
+    country: 'Nigeria', // default country
     recaptcha_token: ''
   });
 
   const recaptchaRef = useRef();
-  const { register, errors, isLoading } = useAuth();
+  const { register, errors, isLoading } = useAuth(switchToLogin);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -262,7 +263,7 @@ const RegisterForm = () => {
               className={styles.formInput}
               required
             >
-              <option value="United States">United States</option>
+              <option value="Nigeria">Nigeria</option>
               <option value="Canada">Canada</option>
               <option value="United Kingdom">United Kingdom</option>
               <option value="Australia">Australia</option>
