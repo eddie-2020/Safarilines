@@ -33,30 +33,22 @@
   color: #4a5568;
 }
 
-.twoFactorForm {
+.verificationForm {
   margin-top: 2rem;
 }
 
-.alternateAction {
-  margin-top: 1.5rem;
+.footer {
+  margin-top: 2rem;
   text-align: center;
+  color: #718096;
+  font-size: 0.875rem;
 }
 
-.alternateButton {
-  background: none;
-  border: none;
+.link {
   color: #3182ce;
-  font-size: 0.875rem;
-  cursor: pointer;
+  text-decoration: none;
 }
 
-.alternateButton:hover {
+.link:hover {
   text-decoration: underline;
-}
-
-.errorMessage {
-  color: #e53e3e;
-  text-align: center;
-  margin-top: 1rem;
-  font-size: 0.875rem;
 }

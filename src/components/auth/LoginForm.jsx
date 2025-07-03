@@ -7,7 +7,7 @@ import styles from './LoginForm.module.css';
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({
-    identifier: '',  // Changed from username to identifier
+    identifier: '',
     password: '',
     recaptcha_token: ''
   });
@@ -26,11 +26,42 @@ const LoginForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const result = await login(formData);
     
-    if (result?.requires_2fa) {
-      // Redirect to 2FA page with email
-      navigate('/two-factor', { state: { email: result.email } });
+    if (!formData.recaptcha_token) {
+      toast.error('Please complete the reCAPTCHA verification');
+      return;
+    }
+
+    try {
+      const result = await login(formData);
+      
+      if (result?.requires_2fa) {
+        // Store temporary token if provided
+        if (result.temp_token) {
+          localStorage.setItem('temp_token', result.temp_token);
+        }
+        // Redirect to 2FA page with email
+        navigate('/two-factor', { 
+          state: { 
+            email: result.email || formData.identifier.includes('@') ? formData.identifier : '',
+            requires_2fa: true 
+          } 
+        });
+      } else if (result?.tokens) {
+        // Successful login without 2FA
+        localStorage.setItem('accessToken', result.tokens.access);
+        localStorage.setItem('refreshToken', result.tokens.refresh);
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      // Specific error for email verification
+      if (error.response?.data?.code === 'email_verification_required') {
+        navigate('/verify-email', { 
+          state: { 
+            email: formData.identifier.includes('@') ? formData.identifier : error.response.data.email 
+          } 
+        });
+      }
     }
   };
 

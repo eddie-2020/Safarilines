@@ -41,9 +41,16 @@ const useAuth = (switchToLogin) => {
   const register = async (data) => {
     setIsLoading(true);
     setErrors({});
-    
+
     try {
-      await api.post('register/', data);
+      const isFormData = data instanceof FormData;
+
+      await api.post('register/', data, {
+        headers: isFormData
+          ? { 'Content-Type': 'multipart/form-data' }
+          : undefined,
+      });
+
       toast.success('Registration successful! Please log in.');
       if (typeof switchToLogin === 'function') {
         switchToLogin();
@@ -58,6 +65,7 @@ const useAuth = (switchToLogin) => {
       setIsLoading(false);
     }
   };
+
 
   const logout = async () => {
     setIsLoggingOut(true);

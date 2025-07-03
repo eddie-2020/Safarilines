@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth'; 
 import styles from './RegisterForm.module.css';
 
@@ -14,22 +15,33 @@ const RegisterForm = ({ switchToLogin }) => {
     password: '',
     confirm_password: '',
     phone: '',
-    security_question: 'mother_maiden_name', // default security question
+    security_question: 'mother_maiden_name',
     security_answer: '',
     address_line_1: '',
     address_line_2: '',
     city: '',
     state: '',
     post_code: '',
-    country: 'Nigeria', // default country
-    recaptcha_token: ''
+    country: 'Nigeria',
+    recaptcha_token: '',
+
+    // Service provider specific
+    company_name: '',
+    service_type: '',
+    license_documents: null,
   });
 
   const recaptchaRef = useRef();
-  const { register, errors, isLoading } = useAuth(switchToLogin);
+  const navigate = useNavigate();
+  const { register, errors, isLoading } = useAuth();
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value, files } = e.target;
+    if (name === 'license_documents') {
+    setFormData({ ...formData, [name]: Array.from(files) }); // store multiple files as array
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   const onReCAPTCHAChange = (token) => {
@@ -38,9 +50,49 @@ const RegisterForm = ({ switchToLogin }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await register(formData);
-  };
 
+    if (!formData.recaptcha_token) {
+      toast.error('Please complete the reCAPTCHA verification');
+      return;
+    }
+
+    if (formData.password !== formData.confirm_password) {
+      toast.error('Passwords do not match');
+      return;
+    }
+
+    try {
+      // Build FormData
+      const payload = new FormData();
+      Object.entries(formData).forEach(([key, value]) => {
+        if (key === 'license_documents' && Array.isArray(value)) {
+          value.forEach((file) => {
+            payload.append('license_documents', file); // append each file
+          });
+        } else {
+          payload.append(key, value);
+        }
+      });
+
+      // Submit to backend (register must support FormData)
+      const response = await register(payload);
+
+      if (response?.email) {
+        navigate('/verify-email', {
+          state: {
+            email: response.email,
+            canResend: true
+          }
+        });
+      } else if (response?.tokens) {
+        localStorage.setItem('accessToken', response.tokens.access);
+        localStorage.setItem('refreshToken', response.tokens.refresh);
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+    }
+  };
   return (
     <form onSubmit={handleSubmit} className={styles.authForm}>
       <h3 className={styles.title}>User Registration</h3>
@@ -273,15 +325,69 @@ const RegisterForm = ({ switchToLogin }) => {
         </div>
       </div>
 
+      {formData.role === 'service_provider' && (
+          <div className={styles.formSection}>
+            <h4 className={styles.sectionTitle}>Service Provider Details</h4>
+
+            {/* Two-column row */}
+            <div className={styles.formRow}>
+              <div className={styles.formGroup}>
+                <input
+                  type="text"
+                  name="company_name"
+                  placeholder="Company Name"
+                  value={formData.company_name}
+                  onChange={handleChange}
+                  className={styles.formInput}
+                  required
+                />
+                {errors.company_name && <span className={styles.error}>{errors.company_name}</span>}
+              </div>
+
+              <div className={styles.formGroup}>
+                <input
+                  type="text"
+                  name="service_type"
+                  placeholder="Type of Service"
+                  value={formData.service_type}
+                  onChange={handleChange}
+                  className={styles.formInput}
+                  required
+                />
+                {errors.service_type && <span className={styles.error}>{errors.service_type}</span>}
+              </div>
+            </div>
+
+            {/* Full width file upload */}
+            <div className={styles.formGroup}>
+              <label htmlFor="license_documents" className={styles.fileLabel}>
+                Upload License Documents
+              </label>
+              <input
+                type="file"
+                name="license_documents"
+                id="license_documents"
+                accept=".pdf,.doc,.docx,.jpg,.png"
+                multiple
+                onChange={handleChange}
+                className={styles.formInput}
+                required
+              />
+              {errors.license_documents && (
+                <span className={styles.error}>{errors.license_documents}</span>
+              )}
+            </div>
+          </div>
+        )}
       {/* reCAPTCHA */}
-        <div className={styles.formGroup}>
-            <ReCAPTCHA
-                ref={recaptchaRef}
-                sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
-                onChange={onReCAPTCHAChange}
-            />
-            {errors.recaptcha_token && <span className={styles.error}>{errors.recaptcha_token}</span>}
-        </div>
+      <div className={styles.formGroup}>
+        <ReCAPTCHA
+          ref={recaptchaRef}
+          sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+          onChange={onReCAPTCHAChange}
+        />
+        {errors.recaptcha_token && <span className={styles.error}>{errors.recaptcha_token}</span>}
+      </div>
 
       {/* Submit Button */}
       <button 
@@ -291,6 +397,17 @@ const RegisterForm = ({ switchToLogin }) => {
       >
         {isLoading ? 'Registering...' : 'Register'}
       </button>
+
+      {/* Switch to Login */}
+      <div className={styles.links}>
+        <button 
+          type="button" 
+          className={styles.linkBtn}
+          onClick={switchToLogin}
+        >
+          Already have an account? Login
+        </button>
+      </div>
     </form>
   );
 };

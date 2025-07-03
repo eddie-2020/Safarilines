@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://safari-lines-api.onrender.com/auth/', // Update with your backend URL
+  baseURL: 'https://safari-lines-api.onrender.com/auth/', 
 });
 
 export const getUserData = async () => {
