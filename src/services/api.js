@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://safari-lines-api.onrender.com/auth/', 
+  baseURL: 'https://api.bloombinary.com/auth/', 
 });
 
 export const getUserData = async () => {
