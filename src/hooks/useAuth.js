@@ -45,27 +45,30 @@ const useAuth = (switchToLogin) => {
     try {
       const isFormData = data instanceof FormData;
 
-      await api.post('register/', data, {
+      const response = await api.post('register/', data, {
         headers: isFormData
           ? { 'Content-Type': 'multipart/form-data' }
           : undefined,
       });
 
-      toast.success('Registration successful! Please log in.');
+      toast.success('Registration successful!');
+      
+      // Optionally switch to login
       if (typeof switchToLogin === 'function') {
         switchToLogin();
       }
-      return true;
+
+      return response.data; // ← FIXED: Return actual backend response
     } catch (error) {
       const errorData = error.response?.data || {};
-      setErrors(errorData.errors || { message: 'Registration failed' });
+      console.error("Backend registration error:", errorData); // ← ADD THIS for debugging
+      setErrors(errorData || { message: 'Registration failed' });
       toast.error(errorData.message || 'Registration failed');
       return false;
     } finally {
       setIsLoading(false);
     }
   };
-
 
   const logout = async () => {
     setIsLoggingOut(true);

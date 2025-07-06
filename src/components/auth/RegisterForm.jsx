@@ -65,10 +65,13 @@ const RegisterForm = ({ switchToLogin }) => {
       // Build FormData
       const payload = new FormData();
       Object.entries(formData).forEach(([key, value]) => {
-        if (key === 'license_documents' && Array.isArray(value)) {
-          value.forEach((file) => {
-            payload.append('license_documents', file); // append each file
-          });
+        if (key === 'license_documents') {
+          if (formData.role === 'service_provider' && Array.isArray(value)) {
+            value.forEach((file) => {
+              payload.append('license_documents', file);
+            });
+          }
+          // ❌ Skip license_documents entirely if not a service provider
         } else {
           payload.append(key, value);
         }
@@ -76,6 +79,8 @@ const RegisterForm = ({ switchToLogin }) => {
 
       // Submit to backend (register must support FormData)
       const response = await register(payload);
+
+      console.log("🚨 Registration response:", response);
 
       if (response?.email) {
         navigate('/verify-email', {
